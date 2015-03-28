@@ -1,57 +1,63 @@
-data_pin  = 4
-clock_pin = 6
+LPD8806 = {
+  leds = {}
+}
 
-gpio.mode(data_pin,  gpio.OUTPUT)
-gpio.mode(clock_pin, gpio.OUTPUT)
+function LPD8806:new (led_count, data_pin, clock_pin)
+  self.led_count  = led_count
+  self.byte_count = led_count * 3
+  self.data_pin   = data_pin
+  self.clock_pin  = clock_pin
 
-led_count  = 16
-byte_count = led_count * 3
+  gpio.mode(data_pin,  gpio.OUTPUT)
+  gpio.mode(clock_pin, gpio.OUTPUT)
 
-leds = {}
-for i=0, byte_count do
-  -- highest most bit must be 1
-  leds[i] = 0x80
-end
-
-function begin()
-  -- send those zero bytes to clear the strip's data
-  gpio.write(data_pin, gpio.LOW)
-
-  count = math.floor(((byte_count+31)/32)*8)
-  for i=0, count do
-    gpio.write(clock_pin, gpio.HIGH)
-    gpio.write(clock_pin, gpio.LOW)
+  for i=0, self.byte_count do
+    -- highest most bit must be 1
+    self.leds[i] = 0x80
   end
 end
 
-function setPixelColor(num, r, g, b)
-  -- strip color order is GBR for some strange reason
-  -- ORing so higest most bit is still 1
-  leds[num]   = bit.bor(g, 0x80)
-  leds[num+1] = bit.bor(b, 0x80)
-  leds[num+2] = bit.bor(r, 0x80)
+function LPD8806:begin()
+  -- send those zero bytes to clear the strip's data
+  gpio.write(self.data_pin, gpio.LOW)
+
+  local count = math.floor(((byte_count+31)/32)*8)
+  for i=0, count do
+    gpio.write(self.clock_pin, gpio.HIGH)
+    gpio.write(self.clock_pin, gpio.LOW)
+  end
 end
 
-function show()
+function LPD8806:setPixelColor(num, r, g, b)
+  -- strip color order is GBR for some strange reason
+  -- ORing so higest most bit is still 1
+  self.leds[num]   = bit.bor(g, 0x80)
+  self.leds[num+1] = bit.bor(b, 0x80)
+  self.leds[num+2] = bit.bor(r, 0x80)
+end
+
+function LPD8806:show()
   -- iterate over led color value
-  for i=0, byte_count do
+  for i=0, self.byte_count do
     i = i - 1
-    byte = leds[i]
+    local byte = self.leds[i]
 
     -- iterate over every bit
-    bit = 0x80
-    while bit >= 0x0 do
-      if bit.band(bit, byte) == 0x0 then
-        gpio.write(data_pin, gpio.LOW)
+    local current_bit = 0x80
+    while current_bit >= 0x0 do
+      if bit.band(current_bit, byte) == 0x0 then
+        gpio.write(self.data_pin, gpio.LOW)
       else
-        gpio.write(data_pin, gpio.HIGH)
+        gpio.write(self.data_pin, gpio.HIGH)
       end
 
-      gpio.write(clock_pin, gpio.HIGH)
-      gpio.write(clock_pin, gpio.LOW)
+      gpio.write(self.clock_pin, gpio.HIGH)
+      gpio.write(self.clock_pin, gpio.LOW)
 
       -- shift to next bit
-      bit.rshift(bit)
+      bit.rshift(current_bit)
     end
   end
 end
+
+return LPD8806
