@@ -6,7 +6,7 @@ Port of [Adafruit's LPD8806 library](https://github.com/adafruit/LPD8806) to Lua
 Usage:
 
 ```lua
-LPD8806 = require('Lua_LPD8806')
+LPD8806 = require('LPD8806')
 -- number of pixels, data pin and clock pin.
 lpd = LPD8806.new(32, 3, 4)
 lpd.setPixelColor(0, 128, 0, 0)
