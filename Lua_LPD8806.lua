@@ -62,7 +62,7 @@ function LPD8806.show(self)
       gpio.write(self.clock_pin, gpio.LOW)
 
       -- shift to next bit
-      bit.rshift(current_bit)
+      bit.rshift(current_bit, 1)
     end
   end
 end
