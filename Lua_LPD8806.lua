@@ -31,7 +31,8 @@ function LPD8806.begin(self)
   -- send those zero bytes to clear the strip's data
   gpio.write(self.data_pin, gpio.LOW)
 
-  local count = math.floor(((self.byte_count+31)/32)*8)
+  -- one byte per group of 32 leds
+  local count = math.floor((self.led_count+31)/32)*8
   for i=0, count do
     gpio.write(self.clock_pin, gpio.HIGH)
     gpio.write(self.clock_pin, gpio.LOW)
