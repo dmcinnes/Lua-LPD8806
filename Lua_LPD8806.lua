@@ -18,6 +18,8 @@ function LPD8806.setup(self)
   -- set pin modes
   gpio.mode(self.data_pin,  gpio.OUTPUT)
   gpio.mode(self.clock_pin, gpio.OUTPUT)
+  gpio.write(self.data_pin, gpio.LOW)
+  gpio.write(self.clock_pin, gpio.LOW)
 
   for i=0, self.byte_count do
     -- highest most bit must be 1
@@ -39,9 +41,10 @@ end
 function LPD8806.setPixelColor(self, num, r, g, b)
   -- strip color order is GBR for some strange reason
   -- ORing so higest most bit is still 1
-  self.leds[num]   = bit.bor(g, 0x80)
-  self.leds[num+1] = bit.bor(b, 0x80)
-  self.leds[num+2] = bit.bor(r, 0x80)
+  local start = num * 3
+  self.leds[start]   = bit.bor(g, 0x80)
+  self.leds[start+1] = bit.bor(b, 0x80)
+  self.leds[start+2] = bit.bor(r, 0x80)
 end
 
 function LPD8806.show(self)
@@ -51,18 +54,18 @@ function LPD8806.show(self)
 
     -- iterate over every bit
     local current_bit = 0x80
-    while current_bit >= 0x0 do
-      if bit.band(current_bit, byte) == 0x0 then
-        gpio.write(self.data_pin, gpio.LOW)
-      else
+    while current_bit > 0x0 do
+      if bit.band(current_bit, byte) > 0x0 then
         gpio.write(self.data_pin, gpio.HIGH)
+      else
+        gpio.write(self.data_pin, gpio.LOW)
       end
 
       gpio.write(self.clock_pin, gpio.HIGH)
       gpio.write(self.clock_pin, gpio.LOW)
 
       -- shift to next bit
-      bit.rshift(current_bit, 1)
+      current_bit = bit.rshift(current_bit, 1)
     end
   end
 end
