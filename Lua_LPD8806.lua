@@ -18,16 +18,18 @@ function LPD8806.setup(self)
   -- set pin modes
   gpio.mode(self.data_pin,  gpio.OUTPUT, gpio.PULLUP)
   gpio.mode(self.clock_pin, gpio.OUTPUT, gpio.PULLUP)
-  gpio.write(self.data_pin, gpio.LOW)
-  gpio.write(self.clock_pin, gpio.LOW)
+  gpio.write(self.data_pin, gpio.HIGH)
+  gpio.write(self.clock_pin, gpio.HIGH)
 
   for i=0, self.byte_count do
     -- highest most bit must be 1
     self.leds[i] = 0x80
   end
+
+  self:resetCursor()
 end
 
-function LPD8806.begin(self)
+function LPD8806.resetCursor(self)
   -- send those zero bytes to clear the strip's data
   gpio.write(self.data_pin, gpio.LOW)
 
@@ -40,12 +42,12 @@ function LPD8806.begin(self)
 end
 
 function LPD8806.setPixelColor(self, num, r, g, b)
-  -- strip color order is GBR for some strange reason
+  -- strip color order is BRG for some strange reason
   -- ORing so higest most bit is still 1
   local start = num * 3
-  self.leds[start]   = bit.bor(g, 0x80)
-  self.leds[start+1] = bit.bor(b, 0x80)
-  self.leds[start+2] = bit.bor(r, 0x80)
+  self.leds[start]   = bit.bor(b, 0x80)
+  self.leds[start+1] = bit.bor(r, 0x80)
+  self.leds[start+2] = bit.bor(g, 0x80)
 end
 
 function LPD8806.show(self)
@@ -55,8 +57,8 @@ function LPD8806.show(self)
 
     -- iterate over every bit
     local current_bit = 0x80
-    while current_bit > 0x0 do
-      if bit.band(current_bit, byte) > 0x0 then
+    while current_bit > 0x00 do
+      if bit.band(current_bit, byte) > 0x00 then
         gpio.write(self.data_pin, gpio.HIGH)
       else
         gpio.write(self.data_pin, gpio.LOW)
@@ -69,6 +71,8 @@ function LPD8806.show(self)
       current_bit = bit.rshift(current_bit, 1)
     end
   end
+
+  self:resetCursor()
 end
 
 return LPD8806
