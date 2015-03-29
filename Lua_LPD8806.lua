@@ -16,8 +16,8 @@ end
 
 function LPD8806.setup(self)
   -- set pin modes
-  gpio.mode(self.data_pin,  gpio.OUTPUT)
-  gpio.mode(self.clock_pin, gpio.OUTPUT)
+  gpio.mode(self.data_pin,  gpio.OUTPUT, gpio.PULLUP)
+  gpio.mode(self.clock_pin, gpio.OUTPUT, gpio.PULLUP)
   gpio.write(self.data_pin, gpio.LOW)
   gpio.write(self.clock_pin, gpio.LOW)
 
