@@ -3,7 +3,6 @@ LPD8806.__index = LPD8806
 
 function LPD8806.new(led_count, data_pin, clock_pin)
   local self = setmetatable({}, LPD8806)
-  self.leds       = {}
   self.led_count  = led_count
   self.byte_count = led_count * 3
   self.data_pin   = data_pin
@@ -21,10 +20,7 @@ function LPD8806.setup(self)
   gpio.write(self.data_pin, gpio.HIGH)
   gpio.write(self.clock_pin, gpio.HIGH)
 
-  for i=0, self.byte_count-1 do
-    -- highest most bit must be 1
-    self.leds[i] = 0x80
-  end
+  self.leds = string.rep(string.char(0x80), self.byte_count)
 
   self:resetCursor()
 end
@@ -45,19 +41,21 @@ function LPD8806.setPixelColor(self, num, r, g, b)
   -- strip color order is GRB for some strange reason
   -- ORing so higest most bit is still 1
   if num >= 0 and num < self.led_count then
-    local start = num * 3
-    self.leds[start]   = bit.bor(g, 0x80)
-    self.leds[start+1] = bit.bor(r, 0x80)
-    self.leds[start+2] = bit.bor(b, 0x80)
+    local str       = self.leds
+    -- string indexes start at 1
+    local start     = (num * 3) + 1
+    local new_pixel = string.char(bit.bor(g, 0x80), bit.bor(r, 0x80), bit.bor(b, 0x80))
+    self.leds = str:sub(1, start-1) .. new_pixel .. str:sub(start+3)
   end
 end
 
 function LPD8806.show(self)
+  local start = tmr.now()
   -- iterate over led color value
   local count = self.byte_count
   local leds  = self.leds
-  for i=0, count-1 do
-    local byte = leds[i]
+  for i=1, count do
+    local byte = leds:byte(i)
 
     -- iterate over every bit
     local current_bit = 0x80
@@ -76,6 +74,7 @@ function LPD8806.show(self)
     end
   end
 
+  print(tmr.now() - start)
   self:resetCursor()
 end
 
