@@ -44,10 +44,12 @@ end
 function LPD8806.setPixelColor(self, num, r, g, b)
   -- strip color order is BRG for some strange reason
   -- ORing so higest most bit is still 1
-  local start = num * 3
-  self.leds[start]   = bit.bor(b, 0x80)
-  self.leds[start+1] = bit.bor(r, 0x80)
-  self.leds[start+2] = bit.bor(g, 0x80)
+  if num >= 0 and num < self.led_count then
+    local start = num * 3
+    self.leds[start]   = bit.bor(b, 0x80)
+    self.leds[start+1] = bit.bor(r, 0x80)
+    self.leds[start+2] = bit.bor(g, 0x80)
+  end
 end
 
 function LPD8806.show(self)
