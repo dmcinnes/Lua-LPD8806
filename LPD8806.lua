@@ -54,8 +54,10 @@ end
 
 function LPD8806.show(self)
   -- iterate over led color value
-  for i=0, self.byte_count do
-    local byte = self.leds[i]
+  local count = self.byte_count
+  local leds  = self.leds
+  for i=0, count-1 do
+    local byte = leds[i]
 
     -- iterate over every bit
     local current_bit = 0x80
