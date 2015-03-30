@@ -21,7 +21,7 @@ function LPD8806.setup(self)
   gpio.write(self.data_pin, gpio.HIGH)
   gpio.write(self.clock_pin, gpio.HIGH)
 
-  for i=0, self.byte_count do
+  for i=0, self.byte_count-1 do
     -- highest most bit must be 1
     self.leds[i] = 0x80
   end
