@@ -63,7 +63,7 @@ do
 
   function LPD8806.show(self)
     -- iterate over led color value
-    local start = tmr.now()
+    -- local start = tmr.now()
     local byte
     local count     = self.byte_count
     local leds      = self.leds
@@ -86,7 +86,7 @@ do
       end
     end
 
-    print(tmr.now() - start)
+    -- print(tmr.now() - start)
 
     self:resetCursor()
   end
