@@ -54,27 +54,34 @@ end
 
 function LPD8806.show(self)
   -- iterate over led color value
-  -- local start = tmr.now()
-  local count = self.byte_count
-  local leds  = self.leds
+  local start = tmr.now()
   local byte
+  local count     = self.byte_count
+  local leds      = self.leds
+  local isset     = bit.isset
+  local HIGH      = gpio.HIGH
+  local LOW       = gpio.LOW
+  local data_pin  = self.data_pin
+  local clock_pin = self.clock_pin
+  local write     = gpio.write
+
   for i=0, count-1 do
     byte = leds[i]
 
     -- iterate backwards over every bit
     for j=7, 0, -1 do
-      if bit.isset(byte, j) then
-        gpio.write(self.data_pin, gpio.HIGH)
+      if isset(byte, j) then
+        write(data_pin, HIGH)
       else
-        gpio.write(self.data_pin, gpio.LOW)
+        write(data_pin, LOW)
       end
 
-      gpio.write(self.clock_pin, gpio.HIGH)
-      gpio.write(self.clock_pin, gpio.LOW)
+      write(clock_pin, HIGH)
+      write(clock_pin, LOW)
     end
   end
 
-  -- print(tmr.now() - start)
+  print(tmr.now() - start)
 
   self:resetCursor()
 end
