@@ -12,7 +12,6 @@ do
     local self = setmetatable({}, LPD8806)
     self.leds       = {}
     self.led_count  = led_count
-    self.byte_count = led_count * 3
     self.data_pin   = data_pin
     self.clock_pin  = clock_pin
 
@@ -28,10 +27,23 @@ do
     write(self.data_pin, HIGH)
     write(self.clock_pin, HIGH)
 
-    for i=0, self.byte_count-1 do
+    local led_byte_count = self.led_count * 3;
+
+    for i=0, led_byte_count-1 do
       -- highest most bit must be 1
       self.leds[i] = 0x80
     end
+
+    -- one byte per group of 32 leds
+    local latch_bytes = math.floor((self.led_count + 31) / 32);
+
+    -- add latch to end of our array
+    for i=0, latch_bytes-1 do
+      self.leds[led_byte_count + i] = 0x00
+    end
+
+    self.byte_count = led_byte_count + latch_bytes
+    self.latch_byte_count = latch_bytes
 
     self:resetCursor()
   end
@@ -40,8 +52,7 @@ do
     -- send those zero bytes to clear the strip's data
     write(self.data_pin, LOW)
 
-    -- one byte per group of 32 leds
-    local count = math.floor((self.led_count+31)/32)*8
+    local count = self.latch_byte_count * 8
     local clk = self.clock_pin
     for i=0, count do
       write(clk, HIGH)
@@ -87,8 +98,6 @@ do
     end
 
     -- print(tmr.now() - start)
-
-    self:resetCursor()
   end
 
 end
